@@ -1,0 +1,8 @@
+wiki/index.db
+wiki/lancedb/
+.env
+__pycache__/
+*.pyc
+.DS_Store
+.venv/
+.claude/settings.local.json

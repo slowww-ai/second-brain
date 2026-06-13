@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>shortwrite — 원본 참고 + 짧은 글 작성</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+  :root {
+    --bg: #faf9f7; --panel: #ffffff; --ink: #1f2328; --muted: #6b7280;
+    --line: #e6e3dd; --accent: #b4532a; --accent-soft: #f6ece6;
+    --ok: #2f7d4f; --dirty: #d98324;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Pretendard", "Apple SD Gothic Neo", "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { font-family: var(--sans); color: var(--ink); background: var(--bg);
+    display: grid; grid-template-rows: auto 1fr; height: 100vh; }
+
+  header { display: flex; align-items: center; gap: 9px; padding: 10px 16px;
+    background: var(--panel); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  header .brand { font-weight: 700; letter-spacing: -.02em; }
+  header .brand span { color: var(--accent); }
+  button, select { font-family: var(--sans); font-size: 13px; border: 1px solid var(--line);
+    background: var(--panel); color: var(--ink); padding: 6px 11px; border-radius: 8px; cursor: pointer; }
+  button:hover { background: var(--accent-soft); border-color: var(--accent); }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.primary:hover { filter: brightness(1.05); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  .vsep { width: 1px; height: 22px; background: var(--line); }
+  .spacer { flex: 1; }
+  .meta { font-size: 12px; color: var(--muted); display: flex; gap: 10px; align-items: center; }
+  .filename { font-family: var(--mono); color: var(--ink); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); display: inline-block; }
+  .dot.dirty { background: var(--dirty); }
+  .turn-hint { font-size: 11px; color: var(--muted); width: 100%; }
+  .turn-hint b { color: var(--accent); }
+
+  /* split layout */
+  .split { display: grid; grid-template-columns: var(--srcw, 1fr) 6px 1fr; min-height: 0; }
+  .split.src-collapsed { grid-template-columns: 0 6px 1fr; }
+  .pane { display: flex; flex-direction: column; min-width: 0; overflow: hidden; background: var(--panel); }
+  .pane.source { border-right: 1px solid var(--line); }
+  .pane-head { display: flex; align-items: center; gap: 8px; padding: 8px 14px;
+    border-bottom: 1px solid var(--line); background: #fcfbf9; font-size: 13px; }
+  .pane-head .label { font-weight: 700; }
+  .pane-head .label .ic { margin-right: 5px; }
+  .pane-head .spacer { flex: 1; }
+  .pane-head select, .pane-head button { font-size: 12px; padding: 3px 8px; }
+  .pane-body { flex: 1; min-height: 0; overflow-y: auto; padding: 18px 22px; line-height: 1.75; }
+  .src-collapsed .pane.source { display: none; }
+
+  .splitter { background: var(--line); cursor: col-resize; }
+  .splitter:hover { background: var(--accent); }
+
+  /* source rendered markdown */
+  #sourceBody.empty, #draftPreview.empty { color: var(--muted); }
+  #sourceBody h1 { font-size: 1.5em; }
+  #sourceBody h2 { font-size: 1.25em; border-bottom: 1px solid var(--line); padding-bottom: .2em; margin-top: 1.4em; }
+  #sourceBody h3 { font-size: 1.1em; }
+  #sourceBody table { border-collapse: collapse; }
+  #sourceBody th, #sourceBody td { border: 1px solid var(--line); padding: 5px 9px; }
+  #sourceBody code { font-family: var(--mono); background: var(--accent-soft); padding: 1px 5px; border-radius: 4px; }
+  #sourceBody pre { background: #1f2328; color: #f6f6f6; padding: 12px; border-radius: 8px; overflow-x: auto; }
+  #sourceBody pre code { background: transparent; color: inherit; }
+  #sourceBody blockquote { border-left: 3px solid var(--accent); margin: 0; padding-left: 14px; color: var(--muted); }
+  #sourceBody [id^="src-h-"] { scroll-margin-top: 8px; }
+
+  /* draft editor */
+  .draft .pane-body { padding: 0; display: flex; flex-direction: column; }
+  #draftTa { flex: 1; min-height: 0; width: 100%; border: none; outline: none; resize: none;
+    font-family: var(--mono); font-size: 14px; line-height: 1.7; padding: 18px 22px;
+    color: var(--ink); background: transparent; }
+  #draftPreview { flex: 1; min-height: 0; display: none; overflow-y: auto; padding: 18px 22px; line-height: 1.8; }
+  #draftPreview.show { display: block; }
+  #draftPreview h1 { font-size: 1.5em; } #draftPreview h2 { font-size: 1.2em; }
+  #draftPreview blockquote { border-left: 3px solid var(--accent); margin: 0; padding-left: 14px; color: var(--muted); }
+  #draftPreview code { font-family: var(--mono); background: var(--accent-soft); padding: 1px 5px; border-radius: 4px; }
+  .counter { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .counter.sweet { color: var(--ok); font-weight: 600; }
+
+  /* playbook drawer (shared with cowrite) */
+  .drawer { position: fixed; top: 0; right: 0; height: 100vh; width: min(480px, 94vw);
+    background: var(--panel); border-left: 1px solid var(--line); box-shadow: -10px 0 30px rgba(0,0,0,.10);
+    transform: translateX(100%); transition: transform .22s ease; z-index: 60; display: flex; flex-direction: column; }
+  .drawer.open { transform: translateX(0); }
+  .drawer-head { display: flex; align-items: center; gap: 6px; padding: 11px 14px;
+    border-bottom: 1px solid var(--line); background: #fcfbf9; }
+  .drawer-head .title { font-weight: 700; font-size: 14px; } .drawer-head .title b { color: var(--accent); }
+  .drawer-head .spacer { flex: 1; } .drawer-head button { padding: 4px 9px; font-size: 13px; }
+  .drawer-src { font-size: 11px; color: var(--muted); padding: 6px 16px 0; font-family: var(--mono); }
+  .drawer-body { overflow-y: auto; padding: 10px 18px 28px; line-height: 1.7; font-size: 14px; }
+  .drawer-body h1 { font-size: 1.25em; }
+  .drawer-body h2 { font-size: 1.05em; margin-top: 1.5em; border-bottom: 1px solid var(--line); padding-bottom: .2em; }
+  .drawer-body h3 { font-size: 1em; }
+  .drawer-body table { border-collapse: collapse; font-size: 12px; width: 100%; margin: 10px 0; }
+  .drawer-body th, .drawer-body td { border: 1px solid var(--line); padding: 4px 7px; text-align: left; }
+  .drawer-body th { background: var(--accent-soft); }
+  .drawer-body code { font-family: var(--mono); background: var(--accent-soft); padding: 1px 5px; border-radius: 4px; font-size: .9em; }
+  .drawer-body blockquote { border-left: 3px solid var(--accent); margin: 0; padding-left: 12px; color: var(--muted); }
+  .drawer-body hr { border: none; border-top: 1px solid var(--line); margin: 16px 0; }
+
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: #fff; padding: 9px 16px; border-radius: 8px;
+    font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 70; }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">short<span>write</span></div>
+  <span class="vsep"></span>
+  <button id="openSrcBtn">📖 원본 열기</button>
+  <button id="reopenSrcBtn" style="display:none">↻</button>
+  <button id="reloadSrcBtn" disabled title="원본 디스크에서 다시 읽기">⟳ 원본</button>
+  <span class="vsep"></span>
+  <button id="newDraftBtn">✨ 새 초안</button>
+  <button id="openDraftBtn">📂 초안 열기</button>
+  <button id="reopenDraftBtn" style="display:none">↻</button>
+  <button id="saveBtn" class="primary" disabled>💾 저장 <small style="opacity:.7">⌘S</small></button>
+  <button id="previewBtn" disabled>👁 미리보기</button>
+  <button id="copyPathBtn" disabled title="초안 절대경로 복사 · Alt+클릭: 원본 절대경로 · Shift+클릭: 루트 폴더 연결(정확한 하위경로용)">📋 경로</button>
+  <span class="vsep"></span>
+  <button id="playbookBtn">📣 SNS 플레이북</button>
+  <button id="toggleSrcBtn" title="원본 패널 접기/펼치기">⇔</button>
+  <div class="spacer"></div>
+  <div class="meta">
+    <span class="counter" id="counter">본문 0자</span>
+    <span class="filename" id="draftName">초안 없음</span>
+    <span class="dot" id="dirtyDot" title="저장됨"></span>
+    <span id="savedAt"></span>
+  </div>
+  <div class="turn-hint">
+    🤝 왼쪽 <b>원본</b>을 참고해 오른쪽에 짧은 글을 쓰고 <b>저장</b> → Claude에게 "이 관점으로 다듬어줘" → Claude가 초안을 수정하면 <b>초안 열기/⟳</b>로 반영. 프런트매터의 <b>angle</b>이 관점입니다.
+  </div>
+</header>
+
+<div class="split" id="split">
+  <section class="pane source">
+    <div class="pane-head">
+      <span class="label"><span class="ic">📖</span>원본 (참고용 · 읽기 전용)</span>
+      <span class="spacer"></span>
+      <select id="srcToc" title="섹션으로 이동" style="max-width:200px"><option>목차</option></select>
+      <span class="filename" id="srcName" style="font-size:11px"></span>
+    </div>
+    <div class="pane-body"><div id="sourceBody" class="empty">📖 <b>원본 열기</b>로 참고할 긴 글을 선택하세요. 여기에 읽기 전용으로 렌더링됩니다.</div></div>
+  </section>
+
+  <div class="splitter" id="splitter"></div>
+
+  <section class="pane draft">
+    <div class="pane-head">
+      <span class="label"><span class="ic">✍️</span>초안 (편집)</span>
+      <span class="spacer"></span>
+      <span class="counter" id="counter2"></span>
+    </div>
+    <div class="pane-body">
+      <textarea id="draftTa" spellcheck="false" placeholder="✨ 새 초안 또는 📂 초안 열기로 시작하세요.&#10;&#10;프런트매터의 angle 필드에 '어떤 관점/훅으로 쓸지'를 적어두면, Claude가 그 관점으로 원본을 압축해 줍니다."></textarea>
+      <div id="draftPreview"></div>
+    </div>
+  </section>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <span class="title">📣 SNS 글쓰기 <b>플레이북</b></span>
+    <span class="spacer"></span>
+    <button id="drawerReload" title="위키에서 다시 불러오기">⟳</button>
+    <button id="drawerClose" title="닫기 (Esc)">✕</button>
+  </div>
+  <div class="drawer-src" id="drawerSrc"></div>
+  <div class="drawer-body" id="drawerBody">불러오는 중…</div>
+</div>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const supported = "showOpenFilePicker" in window;
+let sourceHandle = null, draftHandle = null, dirty = false;
+
+// ---------- IndexedDB handle store ----------
+function idb(mode, fn) {
+  return new Promise((res, rej) => {
+    const open = indexedDB.open("cowrite", 1);
+    open.onupgradeneeded = () => open.result.createObjectStore("handles");
+    open.onerror = () => rej(open.error);
+    open.onsuccess = () => {
+      const tx = open.result.transaction("handles", mode);
+      const r = fn(tx.objectStore("handles"));
+      tx.oncomplete = () => res(r && r.result); tx.onerror = () => rej(tx.error);
+    };
+  });
+}
+const putH = (k, h) => idb("readwrite", (s) => s.put(h, k)).catch(() => {});
+const getH = (k) => idb("readonly", (s) => s.get(k)).catch(() => null);
+
+// ---------- helpers ----------
+function mdRender(t) { return window.marked ? marked.parse(t) : "<pre>" + esc(t) + "</pre>"; }
+function esc(s) { return s.replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c])); }
+function stripFrontmatter(t) { return t.replace(/^---[\s\S]*?---\s*/, ""); }
+let toastT;
+function toast(m) { const e=$("toast"); e.textContent=m; e.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>e.classList.remove("show"),1800); }
+function setSavedAt(ms){ const d=new Date(ms),p=n=>String(n).padStart(2,"0"); $("savedAt").textContent="저장: "+p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds()); }
+
+// ---------- SOURCE (read-only reference) ----------
+async function openSource() {
+  if (!supported) return toast("Chromium 브라우저가 필요합니다");
+  try {
+    const [h] = await window.showOpenFilePicker({ types:[{description:"Markdown",accept:{"text/markdown":[".md",".markdown",".mdx"]}}] });
+    sourceHandle = h; await putH("sw_source", h); await loadSource();
+  } catch(e){ if(e.name!=="AbortError") toast("원본 열기 실패: "+e.message); }
+}
+async function loadSource() {
+  const file = await sourceHandle.getFile();
+  const text = await file.text();
+  $("sourceBody").classList.remove("empty");
+  $("sourceBody").innerHTML = mdRender(text);
+  $("srcName").textContent = sourceHandle.name;
+  buildToc();
+  $("reloadSrcBtn").disabled = false;
+}
+function buildToc() {
+  const heads = $("sourceBody").querySelectorAll("h1,h2,h3");
+  const sel = $("srcToc"); sel.innerHTML = '<option value="">목차…</option>';
+  heads.forEach((h,i) => { h.id = "src-h-"+i;
+    const o = document.createElement("option"); o.value = "src-h-"+i;
+    o.textContent = (h.tagName==="H3"?"   • ":h.tagName==="H2"?"  ":"") + h.textContent.slice(0,40);
+    sel.appendChild(o); });
+}
+$("srcToc").onchange = (e) => { const t=document.getElementById(e.target.value); if(t) t.scrollIntoView({behavior:"smooth",block:"start"}); };
+
+// ---------- DRAFT (editable, saved to disk) ----------
+function draftTemplate() {
+  const src = sourceHandle ? sourceHandle.name : "<원본 .md 경로>";
+  return `---
+title:
+angle:        # 이 글이 취하는 특정 관점/훅 (예: 도발적 정면반박 — "데이터 더 쌓지 마라")
+hook_type:    # 고백+깨달음 / 숫자+반전 / 변신 스토리 / Listicle / 정면반박
+source: ${src}
+format: short
+status: draft
+---
+
+`;
+}
+async function newDraft() {
+  if (!supported) return toast("Chromium 브라우저가 필요합니다");
+  try {
+    const base = sourceHandle ? sourceHandle.name.replace(/\.(md|markdown|mdx)$/,"") : "short";
+    const h = await window.showSaveFilePicker({ suggestedName: base+"-short.md",
+      types:[{description:"Markdown",accept:{"text/markdown":[".md"]}}] });
+    draftHandle = h; await putH("sw_draft", h);
+    $("draftTa").value = draftTemplate();
+    await saveDraft(true); await loadDraft(); $("draftTa").focus();
+  } catch(e){ if(e.name!=="AbortError") toast("새 초안 실패: "+e.message); }
+}
+async function openDraft() {
+  if (!supported) return toast("Chromium 브라우저가 필요합니다");
+  try {
+    const [h] = await window.showOpenFilePicker({ types:[{description:"Markdown",accept:{"text/markdown":[".md",".markdown",".mdx"]}}] });
+    draftHandle = h; await putH("sw_draft", h); await loadDraft();
+  } catch(e){ if(e.name!=="AbortError") toast("초안 열기 실패: "+e.message); }
+}
+async function loadDraft() {
+  const file = await draftHandle.getFile();
+  $("draftTa").value = await file.text();
+  $("draftName").textContent = draftHandle.name;
+  dirty = false; setSavedAt(file.lastModified);
+  $("saveBtn").disabled = false; $("previewBtn").disabled = false; $("copyPathBtn").disabled = false;
+  if ($("draftPreview").classList.contains("show")) $("draftPreview").innerHTML = mdRender($("draftTa").value);
+  updateCounter(); updateDirty();
+}
+async function saveDraft(silent) {
+  if (!draftHandle) return;
+  try {
+    const w = await draftHandle.createWritable();
+    await w.write($("draftTa").value); await w.close();
+    dirty = false; const file = await draftHandle.getFile(); setSavedAt(file.lastModified);
+    updateDirty(); if(!silent) toast("저장됨 ✓");
+  } catch(e){ toast("저장 실패: "+e.message); }
+}
+function updateCounter() {
+  const body = stripFrontmatter($("draftTa").value);
+  const n = body.replace(/\s/g,"").length;       // 공백 제외 글자 수
+  const sweet = n>=600 && n<=800;
+  const txt = `본문 ${n}자` + (sweet ? " · sweet spot ✓" : " (600–800 권장)");
+  $("counter").textContent = txt; $("counter2").textContent = txt;
+  $("counter").classList.toggle("sweet", sweet); $("counter2").classList.toggle("sweet", sweet);
+}
+function updateDirty() {
+  $("dirtyDot").className = "dot" + (dirty ? " dirty" : "");
+  $("dirtyDot").title = dirty ? "저장 안 됨" : "저장됨";
+}
+$("draftTa").addEventListener("input", () => {
+  dirty = true; updateDirty(); updateCounter();
+  const pv = $("draftPreview"); if (pv.classList.contains("show")) pv.innerHTML = mdRender($("draftTa").value);
+});
+
+// ---------- reopen last ----------
+async function reopen(kind) {
+  const key = kind==="source" ? "sw_source" : "sw_draft";
+  try {
+    const h = await getH(key); if(!h) return;
+    const mode = kind==="source" ? "read" : "readwrite";
+    if (await h.queryPermission({mode}) !== "granted" && await h.requestPermission({mode}) !== "granted") return toast("권한 거부됨");
+    if (kind==="source"){ sourceHandle=h; await loadSource(); } else { draftHandle=h; await loadDraft(); }
+  } catch(e){ toast("다시 열기 실패: "+e.message); }
+}
+
+// ---------- playbook drawer ----------
+const PLAYBOOK_PATH = "wiki/notes/viral-content-hook-patterns.md";
+let playbookLoaded = false;
+async function loadPlaybook(force) {
+  const body = $("drawerBody");
+  if (playbookLoaded && !force) return;
+  body.innerHTML = "불러오는 중…"; $("drawerSrc").textContent = PLAYBOOK_PATH;
+  try {
+    const res = await fetch(PLAYBOOK_PATH + (force ? "?t="+Date.now() : ""));
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    body.innerHTML = mdRender(stripFrontmatter(await res.text())); playbookLoaded = true;
+  } catch(e){ body.innerHTML = '<p style="color:var(--muted)">플레이북을 불러오지 못했습니다 ('+esc(e.message)+
+    ').<br><br>로컬 서버로 열었는지 확인하세요:<br><code>http://127.0.0.1:8787/shortwrite.html</code></p>'; }
+}
+function toggleDrawer(open){ const d=$("drawer"); const w = open===undefined ? !d.classList.contains("open") : open;
+  d.classList.toggle("open",w); $("playbookBtn").classList.toggle("primary",w); if(w) loadPlaybook(false); }
+
+// ---------- splitter drag ----------
+(function(){
+  const sp=$("splitter"); let drag=false;
+  sp.addEventListener("mousedown",()=>{drag=true; document.body.style.cursor="col-resize"; document.body.style.userSelect="none";});
+  window.addEventListener("mousemove",(e)=>{ if(!drag) return;
+    const total=$("split").clientWidth; const w=Math.max(180,Math.min(total-260,e.clientX));
+    $("split").style.setProperty("--srcw", w+"px"); });
+  window.addEventListener("mouseup",()=>{drag=false; document.body.style.cursor=""; document.body.style.userSelect="";});
+})();
+
+// ---------- wire up ----------
+$("openSrcBtn").onclick = openSource;
+$("reopenSrcBtn").onclick = () => reopen("source");
+$("reloadSrcBtn").onclick = () => sourceHandle && loadSource().then(()=>toast("원본 다시 읽음 ⟳"));
+$("newDraftBtn").onclick = newDraft;
+$("openDraftBtn").onclick = openDraft;
+$("reopenDraftBtn").onclick = () => reopen("draft");
+$("saveBtn").onclick = () => saveDraft(false);
+$("previewBtn").onclick = () => { const pv=$("draftPreview"),ta=$("draftTa"); const show=!pv.classList.contains("show");
+  pv.classList.toggle("show",show); ta.style.display = show ? "none" : "block";
+  $("previewBtn").textContent = show ? "✏️ 편집" : "👁 미리보기"; if(show) pv.innerHTML = mdRender(ta.value); };
+$("playbookBtn").onclick = () => toggleDrawer();
+$("drawerClose").onclick = () => toggleDrawer(false);
+$("drawerReload").onclick = () => loadPlaybook(true);
+$("toggleSrcBtn").onclick = () => $("split").classList.toggle("src-collapsed");
+$("copyPathBtn").onclick = (e) =>
+  e.shiftKey ? connectRoot()
+  : e.altKey ? copyWorkingPath(sourceHandle, "원본")
+  : copyWorkingPath(draftHandle, "초안");
+
+// ---------- copy working-note path ----------
+// FS Access API only exposes handle.name, never the OS path. Two ways to recover
+// the project path: (1) a one-time "project root" directory handle → root.resolve(file)
+// which works even over file://, (2) probing known wiki dirs over http (served case).
+// Root handle is stored under "root" in the shared "cowrite" DB → connect once, both tools use it.
+const NOTE_DIRS = ["wiki/outputs/ko", "wiki/outputs/en", "wiki/outputs", "wiki/notes", "wiki/raw"];
+const PROJECT_ROOT = "/Users/gieunkwak/Data_Analytics/SlowAI/slowAI_templates/knowledgebase_management";  // 절대경로 prefix — 저장소를 옮기면 이 한 줄만 수정
+let rootDir = null;
+const putRoot = (h) => putH("root", h);
+const getRoot = () => getH("root");
+
+async function connectRoot() {                 // Shift+click: pick the repo root once
+  if (!("showDirectoryPicker" in window)) { toast("이 브라우저는 폴더 선택을 지원하지 않습니다"); return; }
+  try {
+    rootDir = await window.showDirectoryPicker();   // called first in the gesture → keeps activation
+    await putRoot(rootDir);
+    toast("🔗 루트 연결됨: " + rootDir.name + " — 이제 전체 경로가 복사됩니다");
+  } catch (e) { if (e.name !== "AbortError") toast("루트 연결 실패: " + e.message); }
+}
+
+async function resolveNotePath(handle) {
+  if (!handle) return null;
+  const name = handle.name;
+  // 1) project-root directory handle → full repo-relative path (works over file://)
+  try {
+    if (!rootDir) rootDir = await getRoot();
+    if (rootDir) {
+      let perm = await rootDir.queryPermission({ mode: "read" });
+      if (perm !== "granted") { try { perm = await rootDir.requestPermission({ mode: "read" }); } catch (e) {} }
+      if (perm === "granted") {
+        const segs = await rootDir.resolve(handle);
+        if (segs) return segs.join("/");
+      }
+    }
+  } catch (e) {}
+  // 2) http probe of known wiki dirs (served from repo root), size-verified
+  let size = -1;
+  try { size = (await handle.getFile()).size; } catch (e) {}
+  for (const dir of NOTE_DIRS) {
+    try {
+      const res = await fetch(dir + "/" + encodeURIComponent(name) + "?t=" + Date.now(), { cache: "no-store" });
+      if (res.ok && (size < 0 || (await res.blob()).size === size)) return dir + "/" + name;
+    } catch (e) {}
+  }
+  return name;                              // 3) fallback: filename only (path not resolvable)
+}
+async function clipboardWrite(text) {
+  try { await navigator.clipboard.writeText(text); return true; }
+  catch (e) {
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      const ok = document.execCommand("copy"); document.body.removeChild(ta); return ok;
+    } catch (e2) { return false; }
+  }
+}
+async function copyWorkingPath(handle, label) {
+  if (!handle) { toast("열린 " + label + "이 없습니다"); return; }
+  const rel = await resolveNotePath(handle);
+  const abs = PROJECT_ROOT + "/" + rel;       // 절대경로
+  const ok = await clipboardWrite(abs);
+  if (!ok) { toast("복사 실패 — " + abs); return; }
+  toast(rel.includes("/") ? "📋 복사됨 · " + abs
+                          : "📋 복사됨(하위경로 미확인) · " + abs + "  — Shift+클릭으로 루트 연결 권장");
+}
+document.addEventListener("keydown",(e)=>{
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="s"){ e.preventDefault(); saveDraft(false); }
+  if(e.key==="Escape") toggleDrawer(false);
+});
+window.addEventListener("beforeunload",(e)=>{ if(dirty){ e.preventDefault(); e.returnValue=""; } });
+
+(async () => {
+  if(!supported){ toast("Chromium 브라우저에서 열어주세요"); return; }
+  const s = await getH("sw_source"); if(s){ $("reopenSrcBtn").style.display=""; $("reopenSrcBtn").title="최근 원본: "+s.name; }
+  const d = await getH("sw_draft"); if(d){ $("reopenDraftBtn").style.display=""; $("reopenDraftBtn").title="최근 초안: "+d.name; }
+})();
+</script>
+</body>
+</html>

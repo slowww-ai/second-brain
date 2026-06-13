@@ -1,0 +1,55 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Edit(wiki/notes/**)",
+      "Edit(wiki/outputs/**)",
+      "Write(wiki/notes/**)",
+      "Write(wiki/outputs/**)",
+      "Write(wiki/raw/**)",
+      "Bash(.venv/bin/python scripts/ingest.py*)",
+      "Bash(.venv/bin/python scripts/reindex.py*)",
+      "Bash(.venv/bin/python scripts/search.py*)",
+      "Bash(python scripts/ingest.py*)",
+      "Bash(python scripts/reindex.py*)",
+      "Bash(python scripts/search.py*)",
+      "Bash(python3 scripts/ingest.py*)",
+      "Bash(python3 scripts/reindex.py*)",
+      "Bash(python3 scripts/search.py*)",
+      "Bash(ls wiki/*)",
+      "Bash(cat wiki/*)",
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "WebFetch(domain:r.jina.ai)"
+    ],
+    "deny": [
+      "Bash(rm -rf*)",
+      "Bash(rm wiki/raw/*)",
+      "Write(.env)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | grep -q 'wiki/notes/'; then .venv/bin/python scripts/reindex.py >/dev/null 2>&1 || python3 scripts/reindex.py >/dev/null 2>&1; fi"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "count=$(ls wiki/raw 2>/dev/null | wc -l | tr -d ' '); echo \"[second-brain] $count files in wiki/raw/ — run /ingest to process new ones.\""
+          }
+        ]
+      }
+    ]
+  }
+}
