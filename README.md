@@ -113,6 +113,17 @@ raw에     /ingest    /ask로 질문      /garden
 3. **꺼내쓰기** — `/ask`로 빠르게 묻거나, `/brief`로 긴 문서를 만듭니다.
 4. **청소** — 매주 `/garden`으로 정리합니다.
 
+### 📝 Obsidian과 함께 쓰면 더 편해요 (추천)
+
+이 위키는 전부 일반 마크다운(`.md`) 파일이라, [Obsidian](https://obsidian.md) 같은 마크다운 앱으로 열면 노트를 훨씬 보기 좋게 보고 편집할 수 있습니다. 특히 궁합이 좋습니다:
+
+- **이 폴더 자체가 이미 Obsidian 보관함(vault)** 입니다 (`.obsidian/` 설정 포함). Obsidian에서 "폴더를 보관함으로 열기(Open folder as vault)"로 이 폴더를 그대로 열기만 하면 됩니다.
+- 노트끼리 연결한 `[[위키링크]]`를 클릭 한 번으로 따라갈 수 있고, **그래프 뷰**로 노트 사이의 연결 관계를 한눈에 볼 수 있습니다.
+- **역링크(backlink)** 패널이 "이 노트를 가리키는 다른 노트들"을 자동으로 보여줍니다.
+- 미리보기·실시간 편집·검색이 편해서, Claude가 정리해 준 `wiki/notes/`를 사람이 직접 다듬기에 좋습니다.
+
+> Claude Code는 **정리·연결·검색**을, Obsidian은 **보기·편집·탐색**을 맡는 식으로 함께 쓰면 가장 좋습니다.
+
 ### 상태 대시보드 (선택)
 
 아직 정리 안 된 자료가 몇 개인지 한눈에 보고 싶다면:
@@ -252,6 +263,17 @@ raw/                     /brief to write
 2. **Distill** — Run `/ingest` to turn new material into notes.
 3. **Retrieve** — Use `/ask` for quick answers or `/brief` for longer documents.
 4. **Clean** — Run `/garden` weekly to tidy up.
+
+### 📝 Pairs great with Obsidian (recommended)
+
+The whole wiki is just plain markdown (`.md`) files, so opening it in a markdown app like [Obsidian](https://obsidian.md) makes the notes much nicer to read and edit. It's an especially good fit:
+
+- **This folder is already an Obsidian vault** (it ships with an `.obsidian/` config). Just choose "Open folder as vault" in Obsidian and point it at this folder.
+- Follow the `[[wikilinks]]` between notes with a single click, and see how everything connects in the **graph view**.
+- The **backlinks** panel automatically shows you "other notes that point to this one."
+- Preview, live edit, and search make it easy to hand-polish the `wiki/notes/` that Claude distilled for you.
+
+> Best used together: Claude Code handles **distilling, linking, and search**; Obsidian handles **viewing, editing, and exploring**.
 
 ### Status dashboard (optional)
 
