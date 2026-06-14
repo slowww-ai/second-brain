@@ -1,5 +1,16 @@
 # 🧠 Second Brain
 
+<p align="center">
+  <img src="docs/second-brain-hero.png" alt="Box-headed gleaners gathering scattered handwritten notes from a golden field — capturing raw material and distilling it into a personal wiki" width="760">
+</p>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+  <img src="https://img.shields.io/badge/Python-3.13-blue.svg" alt="Python 3.13">
+  <a href="https://claude.com/claude-code"><img src="https://img.shields.io/badge/Powered%20by-Claude%20Code-d97757.svg" alt="Powered by Claude Code"></a>
+  <a href="https://obsidian.md"><img src="https://img.shields.io/badge/Obsidian-vault-7c3aed.svg" alt="Obsidian vault"></a>
+</p>
+
 > 흩어진 메모·기사·생각을 한곳에 모으면, [Claude Code](https://claude.com/claude-code)가 정리·연결·검색·요약까지 도와주는 개인 위키입니다.
 >
 > A personal wiki: dump your raw notes, articles, and thoughts in one place, and [Claude Code](https://claude.com/claude-code) distills, links, searches, and summarizes them for you.
@@ -27,6 +38,8 @@
 | `wiki/raw/` | **모으는 곳.** 기사, 메모, 생각을 그대로 던져 넣습니다. | 추가만 하세요. 기존 파일은 **수정·삭제 금지** (원본 보존) |
 | `wiki/notes/` | **정리된 위키.** Claude가 raw를 다듬어 만든, 서로 연결된 노트들. | 마음껏 고쳐도 됩니다 |
 | `wiki/outputs/` | **결과물.** Claude가 만든 브리핑·메모·문서. | 언제든 지워도 됩니다 |
+
+> 🌱 이 템플릿에는 **예시 노트 몇 개**가 들어 있습니다 (`example` 태그가 붙은 [[second-brain]] · [[zettelkasten]] · [[atomic-notes]] · [[evergreen-notes]]). `/ask`·그래프 뷰·검색이 처음부터 동작하도록 미리 채워둔 것이니, 빈 상태로 시작하고 싶으면 지워도 됩니다.
 
 ### 시작하기 (단계별)
 
@@ -133,6 +146,14 @@ python scripts/dashboard.py            # http://localhost:3100 에서 확인
 python scripts/dashboard.py --port 8000
 ```
 
+### 🛠 작동 방식
+
+URL 하나가 노트가 되고, 그 노트들이 모여 한 편의 글이 되기까지 — 전체 흐름은 다음과 같습니다. **수집 → 보관함 → 색인 & 검색**의 3단계로, 벡터는 LanceDB에, 링크·장부는 SQLite에 나눠 저장됩니다.
+
+<p align="center">
+  <img src="docs/contents-database-workflow.svg" alt="세컨드 브레인 워크플로우 — ① 수집 ② 보관함 ③ 색인 & 검색" width="900">
+</p>
+
 ### 전체 폴더 구조
 
 ```
@@ -178,6 +199,8 @@ CLAUDE.md    # Claude가 매 세션 따르는 규칙
 | `wiki/raw/` | **Where you capture.** Drop articles, notes, and thoughts here as-is. | Add only. **Never edit or delete** existing files (keep originals intact) |
 | `wiki/notes/` | **The distilled wiki.** Interlinked notes Claude derives from raw. | Edit freely |
 | `wiki/outputs/` | **Deliverables.** Briefs, memos, and docs Claude generates. | Delete anytime |
+
+> 🌱 This template ships with **a few example notes** (tagged `example`: [[second-brain]], [[zettelkasten]], [[atomic-notes]], [[evergreen-notes]]) so `/ask`, the graph view, and search work out of the box. Delete them whenever you want a blank slate.
 
 ### Getting started (step by step)
 
@@ -284,6 +307,14 @@ python scripts/dashboard.py            # view at http://localhost:3100
 python scripts/dashboard.py --port 8000
 ```
 
+### 🛠 How it works
+
+One URL becomes a note, and notes become a finished piece — here's the whole flow at a glance. Four stages — **capture → vault → index & retrieve → co-write** — with vectors stored in LanceDB and the link graph & ledger in SQLite.
+
+<p align="center">
+  <img src="docs/contents-database-workflow-en.svg" alt="Second Brain workflow — ① capture ② vault ③ index & retrieve ④ co-write with Claude" width="900">
+</p>
+
 ### Full folder layout
 
 ```
@@ -307,3 +338,9 @@ CLAUDE.md    # the conventions Claude follows every session
 ```
 
 > See `CLAUDE.md` for the full set of rules and conventions.
+
+---
+
+<p align="center">
+  <sub>Built by <a href="https://github.com/hooman34">Gieun Kwak</a> · Powered by <a href="https://claude.com/claude-code">Claude Code</a> · Licensed under <a href="LICENSE">MIT</a></sub>
+</p>

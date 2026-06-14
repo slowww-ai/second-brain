@@ -1,0 +1,253 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1000" viewBox="0 0 1500 1000" font-family="-apple-system, 'Helvetica Neue', 'Segoe UI', sans-serif">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#2D2A26" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#D97757"/>
+    </marker>
+    <marker id="arrU" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5B6B83"/>
+    </marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5E9E6F"/>
+    </marker>
+  </defs>
+  <style>
+    .h1 { font-size: 26px; font-weight: 700; fill: #2D2A26; }
+    .sub { font-size: 14px; fill: #8A8378; }
+    .zone { font-size: 13px; font-weight: 700; letter-spacing: 1.5px; }
+    .zsub { font-size: 11px; }
+    .t { font-size: 15px; font-weight: 700; fill: #2D2A26; }
+    .b { font-size: 12px; fill: #5C564D; }
+    .s { font-size: 11px; fill: #9A938A; }
+    .mono { font-family: 'SF Mono', Menlo, monospace; }
+    .pill { font-family: 'SF Mono', Menlo, monospace; font-size: 12px; font-weight: 600; fill: #FFFFFF; }
+    .lblC { font-size: 11px; fill: #C0633F; font-weight: 600; }
+    .lblU { font-size: 11px; fill: #5B6B83; font-weight: 600; }
+    .card { fill: #FFFFFF; stroke: #E2DCD2; stroke-width: 1; }
+  </style>
+
+  <rect width="1500" height="1000" fill="#FAF9F6"/>
+
+  <!-- Title -->
+  <text x="48" y="58" class="h1">Content Database — Second Brain Workflow</text>
+  <text x="48" y="84" class="sub">One URL becomes a note; notes become a piece you write together</text>
+
+  <!-- Legend -->
+  <line x1="1150" y1="42" x2="1192" y2="42" stroke="#D97757" stroke-width="2.5" marker-end="url(#arrC)"/>
+  <text x="1204" y="46" class="lblC">Claude / a skill, automatic</text>
+  <line x1="1150" y1="66" x2="1192" y2="66" stroke="#5B6B83" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrU)"/>
+  <text x="1204" y="70" class="lblU">Done by you</text>
+  <rect x="1150" y="80" width="56" height="18" rx="9" fill="#2D2A26"/>
+  <text x="1178" y="93" class="pill" font-size="10" text-anchor="middle">/cmd</text>
+  <text x="1216" y="93" class="b">slash command</text>
+
+  <!-- ================= ZONE 1 : CAPTURE ================= -->
+  <rect x="40" y="110" width="390" height="560" rx="18" fill="#EDF3FC" stroke="#C5D7EF" stroke-width="1.5"/>
+  <text x="64" y="142" class="zone" fill="#4A6FA5">① CAPTURE</text>
+  <text x="64" y="160" class="zsub" fill="#7E97BC">Throw anything in — the goal is to pile it all up</text>
+
+  <!-- web url -->
+  <rect x="64" y="186" width="150" height="50" rx="10" class="card" filter="url(#shadow)"/>
+  <text x="80" y="216" font-size="13" font-weight="600" fill="#2D2A26">🌐 Web URL</text>
+  <rect x="240" y="196" width="150" height="28" rx="14" fill="#2D2A26"/>
+  <text x="315" y="214" class="pill" text-anchor="middle">/jina-capture</text>
+  <text x="240" y="244" class="s">jina.ai →</text>
+  <text x="240" y="260" class="s">converts the URL to markdown</text>
+  <path d="M 390 210 C 440 210, 455 202, 502 200" fill="none" stroke="#D97757" stroke-width="2" marker-end="url(#arrC)"/>
+
+  <!-- pdf / image -->
+  <rect x="64" y="300" width="170" height="50" rx="10" class="card" filter="url(#shadow)"/>
+  <text x="80" y="330" font-size="13" font-weight="600" fill="#2D2A26">📄 PDF · 🖼️ Image</text>
+  <text x="64" y="372" class="s">Claude transcribes the full text as .md</text>
+  <path d="M 234 325 C 380 325, 430 230, 502 220" fill="none" stroke="#5B6B83" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrU)"/>
+
+  <!-- thought -->
+  <rect x="64" y="430" width="190" height="50" rx="10" class="card" filter="url(#shadow)"/>
+  <text x="80" y="460" font-size="13" font-weight="600" fill="#2D2A26">💭 Thoughts · meeting notes</text>
+  <text x="64" y="502" class="s">source: thought · original language kept verbatim</text>
+  <path d="M 254 455 C 400 455, 440 280, 502 240" fill="none" stroke="#5B6B83" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrU)"/>
+
+  <text x="64" y="600" class="b" font-style="italic" fill="#7E97BC">Capture now, organize later —</text>
+  <text x="64" y="618" class="b" font-style="italic" fill="#7E97BC">everything lands in wiki/raw/ first.</text>
+
+  <!-- ================= ZONE 2 : THE VAULT ================= -->
+  <rect x="470" y="110" width="550" height="560" rx="18" fill="#FBF5EA" stroke="#E8D9B8" stroke-width="1.5"/>
+  <text x="494" y="142" class="zone" fill="#9A7B3F">② THE VAULT</text>
+  <text x="494" y="160" class="zsub" fill="#B49B6C">wiki/ — open it in Obsidian</text>
+
+  <!-- raw -->
+  <rect x="510" y="180" width="470" height="100" rx="12" class="card" filter="url(#shadow)"/>
+  <text x="530" y="208" class="t mono">🔒 wiki/raw/</text>
+  <text x="530" y="230" class="b">Append-only inbox — never edit or delete</text>
+  <text x="530" y="248" class="s">(everything you write later is built on these raw files)</text>
+  <text x="530" y="266" class="s">frontmatter: id · date · source · tags · status</text>
+
+  <!-- ingest arrow -->
+  <line x1="745" y1="280" x2="745" y2="336" stroke="#D97757" stroke-width="2" marker-end="url(#arrC)"/>
+  <rect x="706" y="288" width="78" height="26" rx="13" fill="#2D2A26"/>
+  <text x="745" y="305" class="pill" text-anchor="middle">/ingest</text>
+  <text x="800" y="294" class="lblC">Claude processes the</text>
+  <text x="800" y="308" class="lblC">newly added raw files</text>
+  <text x="800" y="322" class="s">records them in index.db</text>
+  <text x="800" y="336" class="s">and tracks them as done</text>
+
+  <!-- notes -->
+  <rect x="510" y="340" width="470" height="158" rx="12" class="card" filter="url(#shadow)"/>
+  <text x="530" y="370" class="t mono">🪴 wiki/notes/</text>
+  <text x="530" y="392" class="b">Interlinked wiki — one concept per note, [[wikilinks]]</text>
+  <line x1="905" y1="365" x2="945" y2="380" stroke="#C9C2B6" stroke-width="1.5"/>
+  <line x1="945" y1="380" x2="960" y2="355" stroke="#C9C2B6" stroke-width="1.5"/>
+  <line x1="905" y1="365" x2="920" y2="400" stroke="#C9C2B6" stroke-width="1.5"/>
+  <line x1="945" y1="380" x2="920" y2="400" stroke="#C9C2B6" stroke-width="1.5"/>
+  <circle cx="905" cy="365" r="6" fill="#D97757"/>
+  <circle cx="945" cy="380" r="5" fill="#5B6B83"/>
+  <circle cx="960" cy="355" r="4" fill="#9A7B3F"/>
+  <circle cx="920" cy="400" r="5" fill="#5B6B83"/>
+  <text x="968" y="440" class="s" text-anchor="end">reviewed weekly to check links between notes</text>
+  <rect x="530" y="445" width="300" height="32" rx="16" fill="none" stroke="#5B6B83" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="548" y="465" class="lblU">✍️ you can add &amp; edit notes yourself</text>
+  <rect x="852" y="448" width="84" height="26" rx="13" fill="#2D2A26"/>
+  <text x="894" y="465" class="pill" text-anchor="middle">/garden</text>
+
+  <!-- brief arrow -->
+  <line x1="745" y1="498" x2="745" y2="556" stroke="#D97757" stroke-width="2" marker-end="url(#arrC)"/>
+  <rect x="708" y="512" width="74" height="26" rx="13" fill="#2D2A26"/>
+  <text x="745" y="529" class="pill" text-anchor="middle">/brief</text>
+  <text x="800" y="522" class="lblC">gathers notes into a long piece</text>
+  <text x="800" y="538" class="s">md · html · docx · pdf</text>
+
+  <!-- outputs -->
+  <rect x="510" y="560" width="470" height="88" rx="12" class="card" filter="url(#shadow)"/>
+  <text x="530" y="590" class="t mono">📦 wiki/outputs/</text>
+  <text x="530" y="612" class="b">Briefs · memos · long pieces — built from [[notes]]</text>
+  <text x="530" y="632" class="s">pulls in the full web of note links</text>
+
+  <!-- ================= ZONE 3 : INDEX & RETRIEVE ================= -->
+  <rect x="40" y="700" width="980" height="262" rx="18" fill="#F2EEFA" stroke="#D4C8EC" stroke-width="1.5"/>
+  <text x="64" y="732" class="zone" fill="#6B4FA8">③ INDEX &amp; RETRIEVE</text>
+  <text x="64" y="752" class="zsub" fill="#9B86C8">the layer that auto-stores notes and makes them searchable</text>
+
+  <!-- write path: notes -> reindex.py -->
+  <path d="M 510 472 C 460 478, 452 520, 452 741" fill="none" stroke="#D97757" stroke-width="2" marker-end="url(#arrC)"/>
+  <text transform="rotate(-90 438 600)" x="438" y="600" class="lblC" text-anchor="middle">runs automatically on save to wiki/notes/</text>
+
+  <rect x="405" y="745" width="150" height="42" rx="10" fill="#FFFFFF" stroke="#D97757" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="480" y="771" class="mono" font-size="13" font-weight="700" fill="#2D2A26" text-anchor="middle">⚙️ reindex.py</text>
+
+  <!-- fork: reindex -> sqlite -->
+  <path d="M 435 787 C 390 802, 320 800, 235 814" fill="none" stroke="#D97757" stroke-width="2" marker-end="url(#arrC)"/>
+  <text x="270" y="796" class="lblC" text-anchor="middle">updates link graph · ledger</text>
+
+  <!-- fork: reindex -> lancedb -->
+  <path d="M 525 787 C 535 798, 542 802, 552 810" fill="none" stroke="#D97757" stroke-width="2" marker-end="url(#arrC)"/>
+  <text x="568" y="798" class="lblC">only changed notes</text>
+  <text x="568" y="812" class="lblC">Gemini embedding</text>
+
+  <!-- sqlite -->
+  <rect x="70" y="818" width="290" height="135" rx="12" class="card" filter="url(#shadow)"/>
+  <text x="90" y="846" class="t">🗃️ SQLite</text>
+  <text x="90" y="864" class="s mono">wiki/index.db</text>
+  <text x="90" y="886" class="b">tracks whether each raw file</text>
+  <text x="90" y="902" class="b">has been turned into a note</text>
+  <text x="90" y="920" class="s">links — wikilink graph</text>
+  <text x="90" y="934" class="s">ingested — raw ledger (SHA-256)</text>
+  <text x="90" y="948" class="s">note_meta — tracks mtime</text>
+
+  <!-- lancedb -->
+  <rect x="395" y="818" width="290" height="135" rx="12" class="card" filter="url(#shadow)"/>
+  <text x="415" y="846" class="t">🧠 LanceDB</text>
+  <text x="415" y="864" class="s mono">wiki/lancedb/ · table notes</text>
+  <text x="415" y="886" class="b">embeds each note as a Gemini vector</text>
+  <text x="415" y="902" class="b">and uploads to a searchable vector DB</text>
+  <text x="415" y="922" class="s">queried when making a note, on /ask,</text>
+  <text x="415" y="936" class="s">or when a long piece needs more context</text>
+
+  <!-- ask -->
+  <rect x="800" y="818" width="180" height="135" rx="12" class="card" filter="url(#shadow)"/>
+  <rect x="820" y="834" width="64" height="26" rx="13" fill="#2D2A26"/>
+  <text x="852" y="851" class="pill" text-anchor="middle">/ask</text>
+  <text x="820" y="886" class="b">answers in chat,</text>
+  <text x="820" y="904" class="b">cites [[wikilinks]]</text>
+
+  <!-- read path: ask <-> lancedb -->
+  <path d="M 860 814 C 830 768, 740 768, 681 812" fill="none" stroke="#D97757" stroke-width="2" marker-end="url(#arrC)"/>
+  <text x="778" y="764" class="lblC" text-anchor="middle">embed query → vector search</text>
+  <line x1="689" y1="880" x2="794" y2="880" stroke="#D97757" stroke-width="2" marker-end="url(#arrC)"/>
+  <text x="741" y="898" class="lblC" text-anchor="middle">returns related notes</text>
+
+  <!-- ================= ZONE 4 : CO-WRITE ================= -->
+  <rect x="1060" y="110" width="400" height="850" rx="18" fill="#FCEFF2" stroke="#F0CBD5" stroke-width="1.5"/>
+  <text x="1084" y="142" class="zone" fill="#B4506B">④ CO-WRITE WITH CLAUDE</text>
+  <text x="1084" y="160" class="zsub" fill="#CC8295">polish a long piece together — /cowrite</text>
+
+  <!-- outputs -> canvas -->
+  <path d="M 980 600 C 1040 595, 1035 320, 1092 278" fill="none" stroke="#5B6B83" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrU)"/>
+  <text transform="rotate(-80 1014 500)" x="1014" y="500" class="lblU">open the draft in cowrite</text>
+
+  <!-- browser canvas mockup -->
+  <rect x="1096" y="190" width="328" height="180" rx="12" class="card" filter="url(#shadow)"/>
+  <rect x="1097" y="191" width="326" height="28" rx="11" fill="#F1EDE6"/>
+  <rect x="1097" y="206" width="326" height="13" fill="#F1EDE6"/>
+  <circle cx="1114" cy="205" r="4" fill="#FF5F57"/>
+  <circle cx="1128" cy="205" r="4" fill="#FEBC2E"/>
+  <circle cx="1142" cy="205" r="4" fill="#28C840"/>
+  <text x="1160" y="209" class="s mono">cowrite.html — chapter canvas</text>
+  <rect x="1112" y="236" width="70" height="8" rx="4" fill="#D97757" opacity="0.5"/>
+  <rect x="1112" y="252" width="60" height="8" rx="4" fill="#E3DDD2"/>
+  <rect x="1112" y="268" width="66" height="8" rx="4" fill="#E3DDD2"/>
+  <rect x="1112" y="284" width="54" height="8" rx="4" fill="#E3DDD2"/>
+  <rect x="1112" y="300" width="62" height="8" rx="4" fill="#E3DDD2"/>
+  <rect x="1196" y="236" width="210" height="7" rx="3.5" fill="#ECE7DD"/>
+  <rect x="1196" y="250" width="198" height="7" rx="3.5" fill="#ECE7DD"/>
+  <rect x="1196" y="264" width="206" height="7" rx="3.5" fill="#ECE7DD"/>
+  <rect x="1196" y="278" width="160" height="7" rx="3.5" fill="#ECE7DD"/>
+  <rect x="1196" y="300" width="204" height="7" rx="3.5" fill="#ECE7DD"/>
+  <rect x="1196" y="314" width="188" height="7" rx="3.5" fill="#ECE7DD"/>
+  <rect x="1196" y="328" width="120" height="7" rx="3.5" fill="#ECE7DD"/>
+  <text x="1112" y="356" class="s" font-size="10">browser-based writing canvas</text>
+
+  <!-- canvas -> you -->
+  <line x1="1200" y1="370" x2="1200" y2="426" stroke="#5B6B83" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrU)"/>
+  <text x="1212" y="402" class="lblU">you edit &amp; save</text>
+
+  <!-- you card -->
+  <rect x="1096" y="430" width="328" height="86" rx="12" class="card" filter="url(#shadow)"/>
+  <rect x="1096" y="430" width="6" height="86" rx="3" fill="#5B6B83"/>
+  <text x="1118" y="460" class="t">🧑 You</text>
+  <text x="1118" y="482" class="b">edit chapters · refine tone · save</text>
+  <text x="1118" y="502" class="s">saving writes straight to the source .md</text>
+
+  <!-- you -> claude -->
+  <line x1="1200" y1="516" x2="1200" y2="576" stroke="#D97757" stroke-width="2" marker-end="url(#arrC)"/>
+  <text x="1212" y="550" class="lblC">Claude reads your edits</text>
+
+  <!-- claude card -->
+  <rect x="1096" y="580" width="328" height="86" rx="12" class="card" filter="url(#shadow)"/>
+  <rect x="1096" y="580" width="6" height="86" rx="3" fill="#D97757"/>
+  <text x="1118" y="610" class="t">✱ Claude</text>
+  <text x="1118" y="632" class="b">reviews chapters and edits as you direct</text>
+  <text x="1118" y="652" class="s">also pulls in your go-to references</text>
+
+  <!-- claude -> canvas loop back -->
+  <path d="M 1424 615 C 1452 540, 1452 350, 1424 290" fill="none" stroke="#D97757" stroke-width="2" marker-end="url(#arrC)"/>
+  <text transform="rotate(-90 1448 520)" x="1448" y="524" class="lblC" text-anchor="middle">edits appear back in the canvas</text>
+
+  <!-- done -->
+  <line x1="1200" y1="666" x2="1200" y2="706" stroke="#5E9E6F" stroke-width="2" marker-end="url(#arrG)"/>
+  <rect x="1096" y="710" width="328" height="54" rx="27" fill="#E7F3E9" stroke="#8FBF9A" stroke-width="1.5"/>
+  <text x="1260" y="742" font-size="13" font-weight="700" fill="#3E7A4E" text-anchor="middle">✅ polished piece — finished in wiki/outputs/</text>
+
+  <!-- spin-offs -->
+  <text x="1096" y="812" class="zone" font-size="11" fill="#B4506B">then spin off</text>
+  <rect x="1096" y="826" width="110" height="26" rx="13" fill="#2D2A26"/>
+  <text x="1151" y="843" class="pill" text-anchor="middle">/shortwrite</text>
+  <text x="1220" y="843" class="b">a short SNS post on a single angle</text>
+  <rect x="1096" y="866" width="110" height="26" rx="13" fill="#2D2A26"/>
+  <text x="1151" y="883" class="pill" text-anchor="middle">/slowai</text>
+  <text x="1220" y="883" class="b">Korean draft for the SlowAI blog</text>
+
+  <!-- footer -->
+  <text x="48" y="984" class="s">contents_database · Second Brain workflow · 2026-06-11</text>
+</svg>
