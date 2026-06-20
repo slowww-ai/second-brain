@@ -151,7 +151,7 @@ python scripts/dashboard.py --port 8000
 URL 하나가 노트가 되고, 그 노트들이 모여 한 편의 글이 되기까지 — 전체 흐름은 다음과 같습니다. **수집 → 보관함 → 색인 & 검색**의 3단계로, 벡터는 LanceDB에, 링크·장부는 SQLite에 나눠 저장됩니다.
 
 <p align="center">
-  <img src="docs/contents-database-workflow.svg" alt="세컨드 브레인 워크플로우 — ① 수집 ② 보관함 ③ 색인 & 검색" width="900">
+  <img src="docs/how_it_works.png" alt="세컨드 브레인 워크플로우 — 수집 → 보관함 → 색인 & 검색" width="900">
 </p>
 
 ### 전체 폴더 구조
