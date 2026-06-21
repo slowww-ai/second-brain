@@ -467,17 +467,17 @@ def record(raw_name: str, produced: str) -&gt; None:
 
 ```mermaid
 graph TD
-    subgraph 색인 (Indexing)
-        A[노트: 뽀모도로 기법] --&gt; B{Gemini 모델};
-        B --&gt; C[벡터 주소: (0.1, 0.8, ...)];
-        C --&gt; D[벡터 DB에 저장];
+    subgraph idx[&quot;색인 (Indexing)&quot;]
+        A[&quot;노트: 뽀모도로 기법&quot;] --&gt; B{&quot;Gemini 모델&quot;}
+        B --&gt; C[&quot;벡터 주소: (0.1, 0.8, ...)&quot;]
+        C --&gt; D[&quot;벡터 DB에 저장&quot;]
     end
-    subgraph 검색 (Searching)
-        E[질문: 집중력 높이는 법] --&gt; F{Gemini 모델};
-        F --&gt; G[질문 벡터: (0.2, 0.7, ...)];
-        G --&gt; H{벡터 DB에 질문};
-        D -- 가장 가까운 주소 찾기 --&gt; H;
-        H --&gt; I[결과: 노트 &#x27;뽀모도로 기법&#x27;];
+    subgraph srch[&quot;검색 (Searching)&quot;]
+        E[&quot;질문: 집중력 높이는 법&quot;] --&gt; F{&quot;Gemini 모델&quot;}
+        F --&gt; G[&quot;질문 벡터: (0.2, 0.7, ...)&quot;]
+        G --&gt; H{&quot;벡터 DB에 질문&quot;}
+        D -- &quot;가장 가까운 주소 찾기&quot; --&gt; H
+        H --&gt; I[&quot;결과: 노트 &#x27;뽀모도로 기법&#x27;&quot;]
     end
 ```
 
@@ -884,14 +884,19 @@ renderer.code = function(code, infostring){
 const temp = document.createElement('div');
 temp.innerHTML = marked.parse(src, { renderer, mangle:false, headerIds:true });
 
-// 2) Split the flow into pages, starting a fresh page at each H1/H2/H3
+// 2) Split the flow into pages, starting a fresh page at each H1/H2/H3.
+//    Bare anchors (<a id="chapter-2">) are remembered so in-book links can flip to them.
 const isEmpty = el => !el.textContent.trim() && !el.querySelector('img,svg,pre,table');
 const sections = [];
-let cur = null;
-const start = () => { cur = []; sections.push(cur); };
+const sectionIds = {};                  // section index -> [anchor ids that target it]
+let cur = null, pendingIds = [];
+const start = () => {
+  cur = []; sections.push(cur);
+  if (pendingIds.length){ sectionIds[sections.length-1] = pendingIds; pendingIds = []; }
+};
 for (const el of [...temp.children]){
   if (el.tagName === 'HR') continue;                       // drop chapter separators
-  if (el.tagName === 'A' && isEmpty(el)) continue;         // drop bare anchors
+  if (el.tagName === 'A' && isEmpty(el)){ if (el.id) pendingIds.push(el.id); continue; }
   if (cur && !cur.length && isEmpty(el)) continue;         // no leading blanks
   if (/^H[123]$/.test(el.tagName) && cur && cur.length) start();
   if (!cur) start();
@@ -949,6 +954,16 @@ const pageFlip = new PageFlip(bookEl, {
 });
 pageFlip.loadFromHTML(bookEl.querySelectorAll('.page'));
 bookEl.classList.remove('loading');
+
+// In-book links (e.g. [다음 장](#chapter-2)) flip to the target page instead of dead-jumping
+const anchorMap = {};
+for (const si in sectionIds) for (const id of sectionIds[si]) anchorMap[id] = Number(si) + 1; // +1 = front cover
+bookEl.addEventListener('click', (e) => {
+  const a = e.target.closest && e.target.closest('a[href^="#"]');
+  if (!a) return;
+  const id = decodeURIComponent(a.getAttribute('href').slice(1));
+  if (anchorMap[id] != null){ e.preventDefault(); pageFlip.flip(anchorMap[id]); }
+});
 
 // 6) Controls: counter, buttons, keyboard, chapter jump
 const total = pageFlip.getPageCount();
