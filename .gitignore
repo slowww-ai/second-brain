@@ -11,13 +11,21 @@ __pycache__/
 .obsidian/workspace*.json
 .obsidian/graph.json
 
-# Personal wiki content stays local — the repo shares only code + scaffolding.
-# Everything you actually write/capture in wiki/ is git-ignored; the empty
-# folder structure is kept via .gitkeep. (To share a specific note as a demo,
-# add an explicit `!wiki/notes/<name>.md` un-ignore line below.)
+# Your own wiki content stays local — the repo ships only code + scaffolding.
+# Anything you capture or write in wiki/ is git-ignored; the folder structure
+# survives via .gitkeep. The example notes below are un-ignored on purpose:
+# they are the demo material a fresh clone starts from. To share one of your
+# own notes, add another `!wiki/notes/<name>.md` line here.
 wiki/raw/*
 wiki/notes/*
 wiki/outputs/*
 !wiki/raw/.gitkeep
 !wiki/notes/.gitkeep
 !wiki/outputs/.gitkeep
+!wiki/notes/atomic-notes.md
+!wiki/notes/evergreen-notes.md
+!wiki/notes/second-brain.md
+!wiki/notes/zettelkasten.md
+!wiki/raw/2026-06-14-example-building-a-second-brain.md
+!wiki/raw/2026-06-14-example-thought-note-taking.md
+!wiki/raw/2026-06-14-example-zettelkasten.md

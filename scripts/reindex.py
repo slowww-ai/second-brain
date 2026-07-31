@@ -1,14 +1,14 @@
 """Rebuild the wiki index from wiki/notes/.
 
-Two outputs, decoupled so the connection layer never depends on an API key:
+Two outputs, decoupled so the graph layer never depends on an API key:
 
-  1. **Graph + temporal index** (SQLite at wiki/index.db): `links` (wikilink
-     edges) and `note_meta` (per-note mtime, plus date/kind/tickers for the
-     stock/connection layer). Pure stdlib — always runs, no key needed.
+  1. **Graph index** (SQLite at wiki/index.db): `links` (wikilink edges) and
+     `note_meta` (per-note mtime, plus date/kind from the frontmatter). Pure
+     stdlib — always runs, no key needed.
   2. **Embeddings** (LanceDB at wiki/lancedb/): Gemini vectors for semantic
      search. Only runs when GEMINI_API_KEY is set and google-genai/lancedb are
      installed; otherwise it's skipped with a notice (semantic /ask is then
-     disabled, but /connect and --window keep working).
+     disabled, but backlinks and the link graph keep working).
 
 Incremental: only re-embeds notes whose mtime changed since the last run.
 """
@@ -26,33 +26,19 @@ LINK_RE = re.compile(r"\[\[([^\]]+)\]\]")
 TAG_RE = re.compile(r"tags:\s*\[(.*?)\]")
 DATE_RE = re.compile(r"^date:\s*(.+)$", re.M)
 KIND_RE = re.compile(r"^kind:\s*(.+)$", re.M)
-TICKERS_RE = re.compile(r"^tickers:\s*\[(.*?)\]", re.M)
-TICKER_RE = re.compile(r"^ticker:\s*(.+)$", re.M)
 
 
 def extract_meta(fm: str) -> dict:
-    """Pull the temporal/stock dimensions out of the frontmatter.
+    """Pull the indexable frontmatter dimensions out of a note.
 
-    Additive: notes without these fields just yield empty values, so the rest
-    of the wiki (which never set them) keeps working unchanged.
+    Additive: notes without these fields just yield empty values, so notes that
+    never set them keep working unchanged.
     """
     date_m = DATE_RE.search(fm)
     kind_m = KIND_RE.search(fm)
-    tickers: list[str] = []
-    tl = TICKERS_RE.search(fm)
-    if tl:
-        tickers += [t.strip().strip("'\"").upper() for t in tl.group(1).split(",") if t.strip()]
-    ts = TICKER_RE.search(fm)
-    if ts:
-        tickers.append(ts.group(1).strip().strip("'\"").upper())
-    seen, uniq = set(), []
-    for t in tickers:
-        if t and t not in seen:
-            seen.add(t); uniq.append(t)
     return {
         "date": date_m.group(1).strip().strip("'\"") if date_m else "",
         "kind": kind_m.group(1).strip().strip("'\"") if kind_m else "",
-        "tickers": ",".join(uniq),
     }
 
 
@@ -81,13 +67,12 @@ def ensure_sqlite(con: sqlite3.Connection) -> None:
             id TEXT PRIMARY KEY,
             mtime REAL,
             date TEXT,
-            kind TEXT,
-            tickers TEXT
+            kind TEXT
         );
         CREATE INDEX IF NOT EXISTS idx_note_meta_date ON note_meta(date);
     """)
     have = {row[1] for row in con.execute("PRAGMA table_info(note_meta)")}
-    for col in ("date", "kind", "tickers"):
+    for col in ("date", "kind"):
         if col not in have:
             con.execute(f"ALTER TABLE note_meta ADD COLUMN {col} TEXT")
 
@@ -114,15 +99,15 @@ def get_embedder():
     """Return (client, lancedb_module) if embeddings are possible, else (None, None)."""
     key = os.environ.get("GEMINI_API_KEY")
     if not key:
-        print("reindex: GEMINI_API_KEY not set — building links + temporal index only "
-              "(/connect and --window work; semantic /ask disabled).")
+        print("reindex: GEMINI_API_KEY not set — building the link graph only "
+              "(backlinks work; semantic /ask disabled).")
         return None, None
     try:
         from google import genai
         import lancedb
     except ImportError:
-        print("reindex: google-genai/lancedb not installed — building links + temporal "
-              "index only. Install them (and set up .venv) to enable semantic search.")
+        print("reindex: google-genai/lancedb not installed — building the link graph "
+              "only. Install them (and set up .venv) to enable semantic search.")
         return None, None
     return genai.Client(api_key=key), lancedb
 
@@ -155,10 +140,9 @@ def main() -> None:
 
         # Cheap metadata sync (no API): every note, every run.
         cur.execute(
-            "INSERT INTO note_meta(id, date, kind, tickers) VALUES(?,?,?,?) "
-            "ON CONFLICT(id) DO UPDATE SET date=excluded.date, kind=excluded.kind, "
-            "tickers=excluded.tickers",
-            (note_id, meta["date"], meta["kind"], meta["tickers"]),
+            "INSERT INTO note_meta(id, date, kind) VALUES(?,?,?) "
+            "ON CONFLICT(id) DO UPDATE SET date=excluded.date, kind=excluded.kind",
+            (note_id, meta["date"], meta["kind"]),
         )
 
         if not embed_ok:
