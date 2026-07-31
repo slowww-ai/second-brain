@@ -706,8 +706,6 @@ description: 주제에 대한 관련 노트를 모아 브리핑 문서를 작성
 
 `shortwrite.html`을 웹 브라우저에서 열고 (로컬 서버를 통해 여는 것을 권장합니다), 왼쪽에는 참고할 긴 글을, 오른쪽에는 새로 만들 짧은 글의 파일을 열어보세요.
 
-!https://user-images.githubusercontent.com/1521976/282247547-38038b39-8671-4033-a309-86eb79346610.png
-
 이 편집실의 핵심은 오른쪽 초안 파일의 **프런트매터(frontmatter)**에 있습니다.
 
 ```yaml
@@ -818,37 +816,48 @@ source:       # 긴 원본 글의 파일명
 &lt;hr class=&quot;chap-sep&quot;/&gt;
 
 </textarea>
-<script type="module">
-import { marked } from 'https://cdn.jsdelivr.net/npm/marked@4.3.0/lib/marked.esm.js';
-import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+<!-- Classic UMD builds: browser-ready and reliable on htmlpreview and from file://.
+     (The previous ES-module import pulled mermaid's bundler-only build, whose internal
+     specifiers don't resolve in a browser, which aborted the whole script -> blank page.) -->
+<script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+(function () {
+  var content = document.getElementById('content');
+  if (typeof marked === 'undefined') {
+    content.innerHTML = '<p style="color:#b00020">튜토리얼을 불러오지 못했습니다 — 인터넷 연결을 확인해 주세요.<br>Could not load the tutorial — please check your internet connection.</p>';
+    return;
+  }
+  var src = document.getElementById('source').value;
+  var renderer = new marked.Renderer();
+  renderer.code = function (code, infostring) {
+    var lang = (infostring || '').trim().split(/\s+/)[0];
+    if (lang === 'mermaid') return '<pre class="mermaid">' + code + '</pre>';
+    var esc = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return '<pre><code>' + esc + '</code></pre>';
+  };
+  content.innerHTML = marked.parse(src, { renderer: renderer, mangle: false, headerIds: true });
 
-const src = document.getElementById('source').value;
-const renderer = new marked.Renderer();
-renderer.code = function(code, infostring){
-  const lang = (infostring||'').trim().split(/\s+/)[0];
-  if (lang === 'mermaid') return '<pre class="mermaid">'+code+'</pre>';
-  const esc = code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  return '<pre><code>'+esc+'</code></pre>';
-};
-document.getElementById('content').innerHTML =
-  marked.parse(src, { renderer, mangle:false, headerIds:true });
+  if (typeof mermaid !== 'undefined') {
+    mermaid.initialize({ startOnLoad: false, securityLevel: 'loose', theme: 'neutral' });
+    mermaid.run({ querySelector: '.mermaid' }).catch(function (e) { console.error('mermaid', e); });
+  }
 
-mermaid.initialize({ startOnLoad:false, securityLevel:'loose', theme:'neutral' });
-try { await mermaid.run({ querySelector:'.mermaid' }); } catch(e){ console.error('mermaid', e); }
-
-// Highlight the current section in the sidebar while scrolling
-const links = [...document.querySelectorAll('nav.toc a')];
-const targets = links.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
-const byId = Object.fromEntries(links.map(a => [a.getAttribute('href').slice(1), a]));
-const obs = new IntersectionObserver((entries)=>{
-  entries.forEach(en=>{
-    if(en.isIntersecting){
-      links.forEach(l=>l.classList.remove('active'));
-      const a = byId[en.target.id]; if(a) a.classList.add('active');
-    }
-  });
-}, { rootMargin:'0px 0px -75% 0px', threshold:0 });
-targets.forEach(t=>obs.observe(t));
+  // Highlight the current section in the sidebar while scrolling
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.toc a'));
+  var targets = links.map(function (a) { return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+  var byId = {};
+  links.forEach(function (a) { byId[a.getAttribute('href').slice(1)] = a; });
+  var obs = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) {
+        links.forEach(function (l) { l.classList.remove('active'); });
+        var a = byId[en.target.id]; if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '0px 0px -75% 0px', threshold: 0 });
+  targets.forEach(function (t) { obs.observe(t); });
+})();
 </script>
 </body>
 </html>
